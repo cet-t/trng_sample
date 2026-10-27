@@ -4,7 +4,12 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-trng = "0.1.0"
+trng = { version = "0.1.0", optional = true }
+thiserror = { version = "2", optional = true }
 
 [features]
-choice = []
+choice = ["dep:trng"]
+sampler = ["dep:trng", "dep:thiserror"]
+
+[dev-dependencies]
+trng_a = { git = "https://github.com/cet-t/trng_a", features = ["sfc"] }
