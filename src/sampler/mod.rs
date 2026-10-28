@@ -16,6 +16,3 @@ pub trait Sampler {
     fn build(&mut self) -> SamplerResult<()>;
     fn sample(&mut self) -> Option<usize>;
 }
-
-pub type Int<W> = <W as trng::Word>::Int;
-pub type Float<W> = <W as trng::Word>::Float;

@@ -1,21 +1,21 @@
 use std::ops::AddAssign;
 
-use crate::sampler::{Float, Sampler};
+use crate::sampler::Sampler;
 
 pub struct Bst<'a, R>
 where
     R: trng::Rng,
 {
     rng: &'a mut R,
-    acc_weights: Vec<super::Float<R::Word>>,
+    acc_weights: Vec<crate::Float<R::Word>>,
 }
 
 impl<'a, R> Bst<'a, R>
 where
     R: trng::Rng,
-    Float<R::Word>: Default + AddAssign<Float<R::Word>> + PartialOrd,
+    crate::Float<R::Word>: Default + AddAssign<crate::Float<R::Word>> + PartialOrd,
 {
-    pub fn new(rng: &'a mut R, weights: &'a [super::Float<R::Word>]) -> Self {
+    pub fn new(rng: &'a mut R, weights: &'a [crate::internal::Float<R::Word>]) -> Self {
         let acc_weights = {
             let mut acc = Vec::with_capacity(weights.len());
             let mut total = Default::default();
@@ -35,9 +35,9 @@ where
 impl<'a, R> Sampler for Bst<'a, R>
 where
     R: trng::Rng,
-    Float<R::Word>: Default + AddAssign<Float<R::Word>> + PartialOrd,
+    crate::Float<R::Word>: Default + AddAssign<crate::Float<R::Word>> + PartialOrd,
 {
-    fn build(&mut self) -> super::SamplerResult<()> {
+    fn build(&mut self) -> crate::SamplerResult<()> {
         Ok(())
     }
 

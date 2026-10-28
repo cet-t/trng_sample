@@ -1,5 +1,8 @@
 use trng::{Rng, Word};
 
+#[cfg(test)]
+mod test;
+
 pub trait Choice: trng::Rng {
     fn choice<'a, T>(&mut self, items: &'a [T]) -> Option<&'a T>;
 }

@@ -1,15 +1,15 @@
 use std::ops::{AddAssign, Div, Mul, Sub, SubAssign};
 
-use crate::sampler::{Float, Int, Sampler};
+use crate::{Float, Int, sampler::Sampler};
 
 pub struct Alias<'a, R>
 where
     R: trng::Rng,
 {
     rng: &'a mut R,
-    weights: &'a [super::Float<R::Word>],
+    weights: &'a [crate::Float<R::Word>],
 
-    prob: Option<Vec<super::Float<R::Word>>>,
+    prob: Option<Vec<crate::Float<R::Word>>>,
     alias: Option<Vec<usize>>,
 }
 
@@ -17,7 +17,7 @@ impl<'a, R> Alias<'a, R>
 where
     R: trng::Rng,
 {
-    pub fn new(rng: &'a mut R, weights: &'a [super::Float<R::Word>]) -> Self {
+    pub fn new(rng: &'a mut R, weights: &'a [crate::Float<R::Word>]) -> Self {
         Self {
             rng,
             weights,
@@ -30,7 +30,7 @@ where
 impl<'a, R> Sampler for Alias<'a, R>
 where
     R: trng::Rng,
-    Int<R::Word>: Default + TryFrom<usize> + TryInto<usize>,
+    crate::Int<R::Word>: Default + TryFrom<usize> + TryInto<usize>,
     Float<R::Word>: Default
         + Sub<Output = Float<R::Word>>
         + Div<Output = Float<R::Word>>
@@ -38,7 +38,6 @@ where
         + AddAssign
         + SubAssign
         + From<f32>
-        + PartialOrd<f32>
         + PartialOrd,
 {
     fn build(&mut self) -> super::SamplerResult<()> {
@@ -57,13 +56,13 @@ where
         };
 
         let mut prob = vec![Float::<R::Word>::default(); n];
-        let mut alias = vec![0; n];
+        let mut alias = vec![usize::default(); n];
         let mut small = Vec::with_capacity(n);
         let mut large = Vec::with_capacity(n);
         let mut p: Vec<_> = self.weights.iter().map(|&w| w * scale).collect();
 
         for (i, &pi) in p.iter().enumerate() {
-            if pi < 1.0_f32 {
+            if pi < Float::<R::Word>::from(1.0) {
                 small.push(i);
             } else {
                 large.push(i);
@@ -76,18 +75,18 @@ where
             alias[s] = l;
             let ps = p[s];
             p[l] -= Float::<R::Word>::from(1.0) - ps;
-            if p[l] < 1.0 {
+            if p[l] < Float::<R::Word>::from(1.0) {
                 large.pop();
                 small.push(l);
             }
         }
 
         for i in large {
-            prob[i] = 1.0_f32.into();
+            prob[i] = 1.0.into();
         }
 
         for i in small {
-            prob[i] = 1.0_f32.into();
+            prob[i] = 1.0.into();
         }
 
         self.prob = Some(prob);
@@ -103,7 +102,10 @@ where
         let n = prob.len();
         let i: usize = {
             let max_n = n.checked_sub(1)?.try_into().ok()?;
-            self.rng.randi(Default::default(), max_n).try_into().ok()?
+            self.rng
+                .randi(Int::<R::Word>::default(), max_n)
+                .try_into()
+                .ok()?
         };
         let u = self.rng.randf(0.0.into(), 1.0.into());
 
@@ -112,7 +114,3 @@ where
         Some(res)
     }
 }
-
-#[cfg(test)]
-#[path = "test.rs"]
-mod tests;
